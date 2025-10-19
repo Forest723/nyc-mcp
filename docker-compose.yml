@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  mcp-311:
+    build: ./mcps/nyc-311
+    container_name: nyc-mcp-311
+    ports:
+      - "${MCP_311_PORT:-3001}:3000"
+    environment:
+      - NYC_311_PRIMARY_API_KEY=${NYC_311_PRIMARY_API_KEY}
+      - NYC_311_SECONDARY_API_KEY=${NYC_311_SECONDARY_API_KEY}
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-hpd:
+    build: ./mcps/nyc-hpd
+    container_name: nyc-mcp-hpd
+    ports:
+      - "${MCP_HPD_PORT:-3002}:3000"
+    environment:
+      - HPD_DATAFEED_PRIMARY_API_KEY=${HPD_DATAFEED_PRIMARY_API_KEY}
+      - HPD_DATAFEED_SECONDARY_API_KEY=${HPD_DATAFEED_SECONDARY_API_KEY}
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-events:
+    build: ./mcps/nyc-events
+    container_name: nyc-mcp-events
+    ports:
+      - "${MCP_EVENTS_PORT:-3003}:3000"
+    environment:
+      - EVENT_CALENDAR_PRIMARY_API_KEY=${EVENT_CALENDAR_PRIMARY_API_KEY}
+      - EVENT_CALENDAR_SECONDARY_API_KEY=${EVENT_CALENDAR_SECONDARY_API_KEY}
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-dot:
+    build: ./mcps/nyc-dot
+    container_name: nyc-mcp-dot
+    ports:
+      - "${MCP_DOT_PORT:-3004}:3000"
+    environment:
+      - DOT_PRIMARY_API_KEY=${DOT_PRIMARY_API_KEY}
+      - DOT_SECONDARY_API_KEY=${DOT_SECONDARY_API_KEY}
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mcp-comptroller:
+    build: ./mcps/nyc-comptroller
+    container_name: nyc-mcp-comptroller
+    ports:
+      - "${MCP_COMPTROLLER_PORT:-3005}:3000"
+    environment:
+      - COMPTROLLER_CHECKBOOK_PRIMARY_API_KEY=${COMPTROLLER_CHECKBOOK_PRIMARY_API_KEY}
+      - COMPTROLLER_CHECKBOOK_SECONDARY_API_KEY=${COMPTROLLER_CHECKBOOK_SECONDARY_API_KEY}
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  orchestrator:
+    build: ./orchestrator
+    container_name: nyc-mcp-orchestrator
+    ports:
+      - "${ORCHESTRATOR_PORT:-4000}:4000"
+    depends_on:
+      - mcp-311
+      - mcp-hpd
+      - mcp-events
+      - mcp-dot
+      - mcp-comptroller
+    environment:
+      - NODE_ENV=production
+      - MCP_311_URL=http://mcp-311:3000
+      - MCP_HPD_URL=http://mcp-hpd:3000
+      - MCP_EVENTS_URL=http://mcp-events:3000
+      - MCP_DOT_URL=http://mcp-dot:3000
+      - MCP_COMPTROLLER_URL=http://mcp-comptroller:3000
+    restart: unless-stopped
+    volumes:
+      - ./orchestrator/registry.json:/app/registry.json:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  diagnostic-agent:
+    build: ./diagnostic-agent
+    container_name: nyc-diagnostic-agent
+    ports:
+      - "5000:5000"
+    depends_on:
+      - orchestrator
+      - mcp-311
+      - mcp-hpd
+      - mcp-events
+      - mcp-dot
+      - mcp-comptroller
+    environment:
+      - NODE_ENV=production
+      - ORCHESTRATOR_URL=http://orchestrator:4000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    name: nyc-mcp-network

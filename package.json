@@ -1,0 +1,26 @@
+{
+  "name": "nyc-data-mcp",
+  "version": "1.0.0",
+  "description": "Multi-MCP ecosystem for NYC Open Data with intelligent orchestration",
+  "main": "index.js",
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "clean": "docker-compose down -v"
+  },
+  "keywords": [
+    "mcp",
+    "nyc",
+    "open-data",
+    "ai",
+    "orchestration"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/nyc-data-mcp"
+  }
+}

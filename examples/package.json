@@ -1,0 +1,13 @@
+{
+  "name": "@nyc-mcp/examples",
+  "version": "1.0.0",
+  "description": "Example usage scripts for NYC MCP ecosystem",
+  "type": "module",
+  "scripts": {
+    "simple": "node simple_query.js",
+    "complex": "node complex_investigation.js",
+    "direct": "node direct_mcp_call.js"
+  },
+  "author": "",
+  "license": "MIT"
+}

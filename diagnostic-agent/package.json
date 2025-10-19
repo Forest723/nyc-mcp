@@ -1,0 +1,23 @@
+{
+  "name": "@nyc-mcp/diagnostic-agent",
+  "version": "1.0.0",
+  "description": "Diagnostic Intelligence Layer for NYC MCP Ecosystem",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5"
+  },
+  "keywords": [
+    "mcp",
+    "diagnostic",
+    "urban-intelligence"
+  ],
+  "author": "",
+  "license": "MIT"
+}

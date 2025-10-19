@@ -1,0 +1,24 @@
+{
+  "name": "@nyc-mcp/comptroller",
+  "version": "1.0.0",
+  "description": "MCP server for NYC Comptroller financial data",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5"
+  },
+  "keywords": [
+    "mcp",
+    "nyc",
+    "comptroller",
+    "finance"
+  ],
+  "author": "",
+  "license": "MIT"
+}

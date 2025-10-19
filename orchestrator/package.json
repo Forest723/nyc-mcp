@@ -1,0 +1,23 @@
+{
+  "name": "@nyc-mcp/orchestrator",
+  "version": "1.0.0",
+  "description": "MCP orchestrator for routing and synthesizing queries across NYC data MCPs",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5"
+  },
+  "keywords": [
+    "mcp",
+    "orchestrator",
+    "nyc"
+  ],
+  "author": "",
+  "license": "MIT"
+}
