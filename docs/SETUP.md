@@ -1,35 +1,95 @@
 # NYC MCP Setup Guide
 
-Complete setup guide for the NYC Data MCP ecosystem. This guide covers installation for both developers and end users.
+This guide explains how to configure the NYC MCP ecosystem for use with Claude Code or Claude Desktop.
 
-## Table of Contents
-- [Quick Start](#quick-start)
-- [Detailed Setup](#detailed-setup)
-- [Configuration Options](#configuration-options)
-- [Troubleshooting](#troubleshooting)
-- [For Contributors](#for-contributors)
+## Architecture Overview
 
-## Quick Start
+The NYC MCP system works in two modes:
 
-**For end users who just want to use it:**
+### Mode 1: **Direct MCP Integration** (Recommended for Claude)
+Individual MCP servers communicate via stdio using the official MCP SDK. This is what Claude Code/Desktop expects.
 
-```bash
-# 1. Clone the repo
-git clone <your-repo-url>
-cd nyc-data-mcp
-
-# 2. Copy and configure environment
-cp .env.example .env
-# Edit .env and add your NYC Open Data API keys
-
-# 3. Start services
-docker compose up -d --build
-
-# 4. Install MCP for Claude
-./install-mcp.sh
+```
+┌──────────────────┐
+│  Claude Code     │
+│  Claude Desktop  │
+└────────┬─────────┘
+         │ stdio (MCP Protocol)
+         ▼
+┌──────────────────┐
+│   NYC 311 MCP    │
+│  (mcp-server.js) │
+└────────┬─────────┘
+         │ HTTP (Socrata API)
+         ▼
+┌──────────────────┐
+│  NYC Open Data   │
+│  (Socrata API)   │
+└──────────────────┘
 ```
 
-That's it! You can now use NYC data queries in Claude Desktop or Claude Code.
+### Mode 2: **HTTP API** (For Custom Applications)
+Docker containers exposing HTTP REST APIs with an orchestrator for intelligent routing.
+
+```
+┌──────────────────┐
+│  Your App/CURL   │
+└────────┬─────────┘
+         │ HTTP JSON
+         ▼
+┌──────────────────┐
+│   Orchestrator   │
+│  (port 18000)    │
+└────────┬─────────┘
+         │ HTTP
+    ┌────┼─────┬──────┬──────┐
+    ▼    ▼     ▼      ▼      ▼
+  311  HPD  Events  DOT  Comptroller
+ (18001)(18002)(18003)(18004)(18005)
+```
+
+## Quick Start: Claude Code Integration
+
+### Step 1: Install dependencies
+
+```bash
+cd /path/to/nyc-mcp/mcps/nyc-311
+npm install
+```
+
+### Step 2: Configure Claude Code
+
+Edit `~/.config/claude/config.json`:
+
+```json
+{
+  "mcpServers": {
+    "nyc-311": {
+      "command": "node",
+      "args": ["/FULL/PATH/TO/nyc-mcp/mcps/nyc-311/mcp-server.js"]
+    }
+  }
+}
+```
+
+**⚠️ Important:** Replace `/FULL/PATH/TO/nyc-mcp` with your actual project path.
+
+### Step 3: Restart VS Code
+
+**You MUST completely quit and restart VS Code:**
+
+1. Close all VS Code windows
+2. **Quit VS Code entirely** (⌘+Q on Mac, Alt+F4 on Windows)
+3. Reopen VS Code
+
+### Step 4: Verify MCP is Connected
+
+1. Open Claude Code in VS Code
+2. Look for the MCP servers indicator in the Claude Code interface
+3. You should see "nyc-311" listed
+4. Try asking: "What are recent 311 complaints in Manhattan?"
+
+That's it! You now have direct access to NYC 311 data from Claude Code.
 
 ## Detailed Setup
 

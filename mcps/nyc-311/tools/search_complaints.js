@@ -40,11 +40,16 @@ export default async function searchComplaints(params) {
   }
 
   try {
+    // Socrata Open Data - works without API key (rate limited to 1000 requests/day)
+    // With a Socrata app token (free), rate limit increases to 50k/day
+    const headers = {};
+    if (process.env.SOCRATA_APP_TOKEN) {
+      headers['X-App-Token'] = process.env.SOCRATA_APP_TOKEN;
+    }
+
     const response = await axios.get(SOCRATA_ENDPOINT, {
       params: query,
-      headers: {
-        'X-App-Token': process.env.NYC_311_PRIMARY_API_KEY
-      }
+      headers
     });
 
     return {
