@@ -28,24 +28,28 @@ export default async function searchStreetClosures(params) {
   }
 
   try {
+    const headers = {};
+    if (process.env.NYC_OPEN_DATA_APP_TOKEN) {
+      headers['X-App-Token'] = process.env.NYC_OPEN_DATA_APP_TOKEN;
+    }
+
     const response = await axios.get(SOCRATA_ENDPOINT, {
       params: query,
-      headers: {
-        'X-App-Token': process.env.DOT_PRIMARY_API_KEY
-      }
+      headers
     });
 
     return {
       success: true,
       count: response.data.length,
       closures: response.data.map(closure => ({
-        work_type: closure.work_type,
-        boro: closure.boro,
+        purpose: closure.purpose,
+        borough_code: closure.borough_code,
         on_street: closure.onstreetname,
         from_street: closure.fromstreetname,
         to_street: closure.tostreetname,
-        work_start_date: closure.workstartdate,
-        work_end_date: closure.workenddate
+        work_start_date: closure.work_start_date,
+        work_end_date: closure.work_end_date,
+        segment_id: closure.segmentid
       }))
     };
   } catch (error) {

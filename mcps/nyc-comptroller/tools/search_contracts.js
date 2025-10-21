@@ -12,7 +12,7 @@ export default async function searchContracts(params) {
   const whereConditions = [];
 
   if (agency) {
-    whereConditions.push(`agency LIKE '%${agency}%'`);
+    whereConditions.push(`agency_name LIKE '%${agency}%'`);
   }
 
   if (vendor) {
@@ -21,7 +21,7 @@ export default async function searchContracts(params) {
 
   const query = {
     $limit: limit,
-    $order: 'award_date DESC'
+    $order: 'start_date DESC'
   };
 
   if (whereConditions.length > 0) {
@@ -29,25 +29,33 @@ export default async function searchContracts(params) {
   }
 
   try {
+    const headers = {};
+    if (process.env.NYC_OPEN_DATA_APP_TOKEN) {
+      headers['X-App-Token'] = process.env.NYC_OPEN_DATA_APP_TOKEN;
+    }
+
     const response = await axios.get(SOCRATA_ENDPOINT, {
       params: query,
-      headers: {
-        'X-App-Token': process.env.COMPTROLLER_CHECKBOOK_PRIMARY_API_KEY
-      }
+      headers
     });
 
     return {
       success: true,
       count: response.data.length,
       contracts: response.data.map(c => ({
-        contract_number: c.contract_number,
-        agency: c.agency,
+        pin: c.pin,
+        agency_name: c.agency_name,
         vendor_name: c.vendor_name,
-        award_date: c.award_date,
+        vendor_address: c.vendor_address,
         start_date: c.start_date,
         end_date: c.end_date,
         contract_amount: c.contract_amount ? parseFloat(c.contract_amount) : null,
-        contract_description: c.contract_description
+        short_title: c.short_title,
+        category_description: c.category_description,
+        type_of_notice_description: c.type_of_notice_description,
+        selection_method_description: c.selection_method_description,
+        contact_name: c.contact_name,
+        email: c.email
       }))
     };
   } catch (error) {

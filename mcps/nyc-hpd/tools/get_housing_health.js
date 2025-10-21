@@ -24,11 +24,14 @@ export default async function getHousingHealth(params) {
       $select: 'violationstatus,novdescription,inspectiondate,currentstatusdate,buildingid'
     };
 
+    const headers = {};
+    if (process.env.NYC_OPEN_DATA_APP_TOKEN) {
+      headers['X-App-Token'] = process.env.NYC_OPEN_DATA_APP_TOKEN;
+    }
+
     const violationsResponse = await axios.get(VIOLATIONS_ENDPOINT, {
       params: violationsQuery,
-      headers: {
-        'X-App-Token': process.env.HPD_DATAFEED_PRIMARY_API_KEY
-      }
+      headers
     });
 
     // Fetch recent complaints
@@ -41,9 +44,7 @@ export default async function getHousingHealth(params) {
 
     const complaintsResponse = await axios.get(COMPLAINTS_ENDPOINT, {
       params: complaintsQuery,
-      headers: {
-        'X-App-Token': process.env.HPD_DATAFEED_PRIMARY_API_KEY
-      }
+      headers
     });
 
     const violations = violationsResponse.data;

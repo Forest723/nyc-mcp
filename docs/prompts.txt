@@ -1,0 +1,32 @@
+More Prompts to Try (Getting Creative!)
+Basic Queries
+"Find all heat complaints in the Bronx from the last 30 days"
+"Show me the slowest-resolved complaint types citywide"
+"What's happening with street condition complaints in Queens?"
+"Give me a breakdown of all complaint types in Staten Island"
+
+Analysis & Insights
+"Which borough has the worst neighborhood health score and why?"
+"Compare noise complaint patterns between Brooklyn and Manhattan"
+"Are there any complaint types that spike on weekends?"
+"Show me resolution rate trends over the last 90 days"
+"Which neighborhoods are most engaged with 311 services?"
+
+Investigative/Complex
+"Find patterns between complaint types and seasons"
+"Which complaint types take the longest to resolve and why might that be?"
+"Analyze the relationship between complaint volume and resolution times"
+"Create a health report for all 5 boroughs and rank them"
+"What can the 311 data tell us about quality of life across NYC?"
+
+Cross-Referencing (for when you wire up other data sources)
+"Show me noise complaints near upcoming city events in Manhattan"
+"Are there more 311 complaints in buildings with HPD violations?"
+"Do street closures correlate with increased complaints in the area?"
+"Compare city spending on services vs. 311 complaint response times"
+
+Fun/Creative
+"If you were the mayor, which complaint type would you prioritize and why?"
+"Create a 'state of the city' report based on 311 data"
+"Which neighborhood needs the most attention based on complaint data?"
+"Tell me a story about Brooklyn through its 311 complaints"

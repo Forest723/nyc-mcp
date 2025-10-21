@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "nyc-open-data": {
+      "command": "node",
+      "args": [
+        "/Users/forestcoon/Desktop/projects/nyc-mcp/index.js"
+      ],
+      "env": {}
+    }
+  }
+}

@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const SOCRATA_ENDPOINT = 'https://data.cityofnewyork.us/resource/mxwn-eh3b.json';
+// Using Expense Budget dataset as Checkbook NYC 2.0 (mxwn-eh3b) is federated/non-tabular
+// For actual transaction-level spending, the Comptroller's XML API may be needed
+const SOCRATA_ENDPOINT = 'https://data.cityofnewyork.us/resource/mwzb-yiwb.json';
 
 export default async function searchSpending(params) {
   const {
@@ -18,11 +20,11 @@ export default async function searchSpending(params) {
   }
 
   if (min_amount) {
-    whereConditions.push(`check_amount >= ${min_amount}`);
+    whereConditions.push(`current_modified_budget_amount >= ${min_amount}`);
   }
 
   if (max_amount) {
-    whereConditions.push(`check_amount <= ${max_amount}`);
+    whereConditions.push(`current_modified_budget_amount <= ${max_amount}`);
   }
 
   if (fiscal_year) {
@@ -31,7 +33,7 @@ export default async function searchSpending(params) {
 
   const query = {
     $limit: limit,
-    $order: 'check_amount DESC'
+    $order: 'current_modified_budget_amount DESC'
   };
 
   if (whereConditions.length > 0) {
@@ -39,27 +41,34 @@ export default async function searchSpending(params) {
   }
 
   try {
+    const headers = {};
+    if (process.env.NYC_OPEN_DATA_APP_TOKEN) {
+      headers['X-App-Token'] = process.env.NYC_OPEN_DATA_APP_TOKEN;
+    }
+
     const response = await axios.get(SOCRATA_ENDPOINT, {
       params: query,
-      headers: {
-        'X-App-Token': process.env.COMPTROLLER_CHECKBOOK_PRIMARY_API_KEY
-      }
+      headers
     });
 
-    const totalSpending = response.data.reduce((sum, item) =>
-      sum + parseFloat(item.check_amount || 0), 0);
+    const totalBudget = response.data.reduce((sum, item) =>
+      sum + parseFloat(item.current_modified_budget_amount || 0), 0);
 
     return {
       success: true,
       count: response.data.length,
-      total_spending: totalSpending,
-      spending: response.data.map(s => ({
+      total_budget: totalBudget,
+      note: 'This data shows budgeted amounts. For actual spending transactions, the Comptroller XML API may be needed.',
+      budget_items: response.data.map(s => ({
+        fiscal_year: s.fiscal_year,
         agency_name: s.agency_name,
-        vendor_name: s.vendor_name,
-        check_amount: parseFloat(s.check_amount),
-        check_eft_issued_date: s.check_eft_issued_date,
-        expenditure_object_name: s.expenditure_object_name,
-        fiscal_year: s.fiscal_year
+        unit_appropriation_name: s.unit_appropriation_name,
+        budget_code_name: s.budget_code_name,
+        object_code_name: s.object_code_name,
+        object_class_name: s.object_class_name,
+        adopted_budget_amount: parseFloat(s.adopted_budget_amount || 0),
+        current_modified_budget_amount: parseFloat(s.current_modified_budget_amount || 0),
+        financial_plan_amount: parseFloat(s.financial_plan_amount || 0)
       }))
     };
   } catch (error) {

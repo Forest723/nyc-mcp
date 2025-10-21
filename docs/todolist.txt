@@ -1,0 +1,74 @@
+Priority 0: Session Setup (10 min)
+Task: Pick the 12-month window and the 90-day window you’ll use across tools; set them as defaults.
+Why: Comparable outputs across datasets.
+Done when: Window bounds are documented once and reused everywhere; each tool returns window.start, window.end.
+
+Priority 1: Make outputs trustworthy (Aggregation → Validation → Envelope)
+Server-side aggregation for 311
+Why: Tiny, accurate payloads; no pagination misses.
+Do: Use SoQL to return period counts (day/week/month), top categories, and borough splits for last 90d/365d.
+Done when: A 12-month citywide 311 trend returns ≤200 rows, includes trend% with divide-by-zero guard, and no 400s.
+Standard output envelope for every tool
+Why: Cross-dataset joins become trivial.
+Do: All tools return: source, event_type, window, count, records[] with (ts/period, geo, topic, value) and a small meta.
+Done when: 311, DOT, Events, Comptroller all emit the same field names.
+Input validation + friendly errors
+Why: Eliminate brittle failures and unclear 400s.
+Do: Validate days, enums (borough, group_by), and escape user strings; return structured error with guidance.
+Done when: Invalid inputs yield clear messages and success rate >99% on happy path.
+
+Priority 2: Fix data coverage (HPD + DOT cleanup)
+Unblock HPD violations (your 403)
+Why: Housing is a core storyline.
+Do: Switch to the public HPD violations dataset; 12-month window; return counts by NTA/CD and violation class (A/B/C); compute simple severity mix.
+Done when: HPD tool returns no 403s, includes severity mix, and an NTA table.
+De-dupe DOT closures
+Why: Avoid inflated counts from segment duplicates.
+Do: Collapse by (segment_id, start, end); merge multiple purposes; attach borough/CD if available.
+Done when: Count is stable under repeats and each closure is unique by that key.
+
+Priority 3: Geography once, reuse everywhere
+Geo enrichment (borough → CD → NTA)
+Why: All insights are geographic; joins require shared keys.
+Do: Add a light enrichment step to attach borough, CD, NTA (and BBL when present); cache results (in-memory) by lat/lon or address.
+Done when: 311, HPD, DOT each return records with NTA for ≥95% of rows in your test windows.
+
+Priority 4: Reliability primitives (you’ll feel the difference)
+Pagination, retries, caching
+Why: Correctness and resilience under rate limits.
+Do: Auto-paginate only when not aggregated; add exponential backoff for 429/5xx; cache responses by query signature (short TTL).
+Done when: Repeating the same query is instant, and burst calls don’t fail.
+Rate-limit hygiene
+Why: Prevent demo failures.
+Do: Hard caps on days and $limit; steer to aggregates by default; expose optional API token use.
+Done when: You can run your full playbook without hitting caps.
+
+Priority 5: Cross-dataset analysis (one killer composite)
+Housing Stress v1 (311 + HPD)
+Why: Show end-to-end value now.
+Do: For each NTA, compute: 311 housing complaints per 1k units + HPD violations per 1k (severity-weighted). Return top/worst NTAs with a 2-line rationale.
+Done when: Single tool returns a ranked NTA list with component metrics and the shared envelope.
+Spending overlay v0 (Comptroller)
+Why: First “service imbalance” signal.
+Do: Pull housing-related spend (or agency proxies), normalize per capita/household, join by borough/CD (broadcast to NTA if needed).
+Done when: Composite includes a spend component with clear caveats if geographic precision is coarse.
+
+Priority 6: Communicate clearly
+Headlines + takeaways in every response
+Why: Agents/humans should see meaning immediately.
+Do: Add a headline and takeaways[] (2–3 bullets) derived from the returned data.
+Done when: Every tool response starts with a plain-English headline and two concise bullets.
+Docs: contract per tool + tokens
+Why: Prevent drift; speed future you.
+Do: For each tool: inputs (constraints), outputs (envelope fields), examples, known caveats; update .env.example + token how-to.
+Done when: README has copy-paste examples, token guidance, and each tool has a mini spec.
+
+Priority 7: Confidence & observability
+Unit tests for aggregations & validation
+Why: Guardrails as you scale.
+Do: Golden tests for: window bounds, trend calc (incl. prev=0), enum validation, dedupe logic.
+Done when: Tests cover happy paths + edge cases; CI green.
+Structured logs + simple counters
+Why: See what’s slow or flaky.
+Do: Log per tool: latency, rows/records, retries, dataset, window; count failures by error type.
+Done when: You can answer “which tool is slowest?” from logs in 30 seconds

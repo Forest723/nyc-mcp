@@ -13,9 +13,12 @@ export default async function getUpcomingEvents(params) {
   const futureDate = new Date();
   futureDate.setDate(futureDate.getDate() + days);
 
+  // Format dates as YYYY-MM-DDTHH:MM:SS for Socrata
+  const formatDate = (date) => date.toISOString().split('.')[0];
+
   const whereConditions = [
-    `start_date_time>='${now.toISOString()}'`,
-    `start_date_time<='${futureDate.toISOString()}'`
+    `start_date_time>='${formatDate(now)}'`,
+    `start_date_time<='${formatDate(futureDate)}'`
   ];
 
   if (borough) {
@@ -29,11 +32,14 @@ export default async function getUpcomingEvents(params) {
   };
 
   try {
+    const headers = {};
+    if (process.env.NYC_OPEN_DATA_APP_TOKEN) {
+      headers['X-App-Token'] = process.env.NYC_OPEN_DATA_APP_TOKEN;
+    }
+
     const response = await axios.get(SOCRATA_ENDPOINT, {
       params: query,
-      headers: {
-        'X-App-Token': process.env.EVENT_CALENDAR_PRIMARY_API_KEY
-      }
+      headers
     });
 
     return {

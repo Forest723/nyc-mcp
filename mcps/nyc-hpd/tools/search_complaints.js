@@ -32,11 +32,14 @@ export default async function searchComplaints(params) {
   };
 
   try {
+    const headers = {};
+    if (process.env.NYC_OPEN_DATA_APP_TOKEN) {
+      headers['X-App-Token'] = process.env.NYC_OPEN_DATA_APP_TOKEN;
+    }
+
     const response = await axios.get(SOCRATA_ENDPOINT, {
       params: query,
-      headers: {
-        'X-App-Token': process.env.HPD_DATAFEED_PRIMARY_API_KEY
-      }
+      headers
     });
 
     return {

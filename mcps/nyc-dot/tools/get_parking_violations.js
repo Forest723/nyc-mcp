@@ -29,11 +29,14 @@ export default async function getParkingViolations(params) {
   }
 
   try {
+    const headers = {};
+    if (process.env.NYC_OPEN_DATA_APP_TOKEN) {
+      headers['X-App-Token'] = process.env.NYC_OPEN_DATA_APP_TOKEN;
+    }
+
     const response = await axios.get(SOCRATA_ENDPOINT, {
       params: query,
-      headers: {
-        'X-App-Token': process.env.DOT_PRIMARY_API_KEY
-      }
+      headers
     });
 
     return {
@@ -41,18 +44,18 @@ export default async function getParkingViolations(params) {
       count: response.data.length,
       violations: response.data.map(v => ({
         summons_number: v.summons_number,
-        plate: v.plate_id,
-        state: v.registration_state,
-        plate_type: v.plate_type,
+        plate: v.plate,
+        state: v.state,
+        license_type: v.license_type,
         issue_date: v.issue_date,
-        violation_code: v.violation_code,
-        vehicle_body_type: v.vehicle_body_type,
-        vehicle_make: v.vehicle_make,
-        violation_county: v.violation_county,
-        violation_precinct: v.violation_precinct,
+        violation: v.violation,
         violation_time: v.violation_time,
-        house_number: v.house_number,
-        street_name: v.street_name
+        fine_amount: v.fine_amount,
+        penalty_amount: v.penalty_amount,
+        amount_due: v.amount_due,
+        precinct: v.precinct,
+        county: v.county,
+        issuing_agency: v.issuing_agency
       }))
     };
   } catch (error) {
